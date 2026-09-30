@@ -8,7 +8,7 @@ class CreateFoundationPersistentLogins extends BaseMigration {
 	public function change(): void {
 		$this->table('foundation_persistent_logins', ['id' => false, 'primary_key' => ['id']])
 			->addColumn('id', 'char', ['limit' => 26, 'null' => false])
-			->addColumn('user_id', 'char', ['limit' => 26, 'null' => false])
+			->addColumn('account_id', 'char', ['limit' => 26, 'null' => false])
 			->addColumn('selector', 'string', ['limit' => 32, 'null' => false])
 			->addColumn('validator_hash', 'char', ['limit' => 64, 'null' => false])
 			->addColumn('expires_at', 'datetime', ['null' => false])
@@ -16,8 +16,8 @@ class CreateFoundationPersistentLogins extends BaseMigration {
 			->addColumn('revoked_at', 'datetime', ['null' => true])
 			->addColumn('created', 'datetime', ['null' => false])
 			->addIndex(['selector'], ['unique' => true])
-			->addIndex(['user_id', 'expires_at'])
-			->addForeignKey('user_id', 'foundation_users', 'id', ['delete' => 'CASCADE'])
+			->addIndex(['account_id', 'expires_at'])
+			->addForeignKey('account_id', 'foundation_accounts', 'id', ['delete' => 'CASCADE'])
 			->create();
 	}
 }

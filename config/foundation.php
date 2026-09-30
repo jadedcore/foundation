@@ -7,9 +7,9 @@ return [
 			'enabled' => false,
 			'prefix' => '/foundation',
 		],
-		'users' => [
-			'table' => 'foundation_users',
-			'model' => 'Foundation.Users',
+		'accounts' => [
+			'table' => 'foundation_accounts',
+			'model' => 'Foundation.Accounts',
 			'identifierField' => 'email',
 			'activeStatuses' => ['active'],
 			'activateOnEmailVerification' => true,

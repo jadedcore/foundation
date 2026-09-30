@@ -6,12 +6,13 @@ namespace Foundation\Service;
 use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventManager;
-use Foundation\Model\Table\UsersTable;
+use Foundation\Model\Entity\Account;
+use Foundation\Model\Table\AccountsTable;
 
 final class RegistrationService {
 	/** Create the registration service. */
 	public function __construct(
-		private readonly UsersTable $users,
+		private readonly AccountsTable $accounts,
 		private readonly AccountTokenService $tokens,
 		private readonly PasswordService $passwords,
 	) {
@@ -19,21 +20,21 @@ final class RegistrationService {
 
 	/** Register a pending account and issue an email verification token. */
 	public function register(string $email, string $password): RegistrationResult {
-		$result = $this->users->getConnection()->transactional(function () use ($email, $password): RegistrationResult {
-			/** @var \Foundation\Model\Entity\User $user */
-			$user = $this->users->newEntity(['email' => $email]);
-			$user->status = 'pending';
-			$this->users->saveOrFail($user);
-			$this->passwords->set($user, $password);
+		$result = $this->accounts->getConnection()->transactional(function () use ($email, $password): RegistrationResult {
+			/** @var \Foundation\Model\Entity\Account $account */
+			$account = $this->accounts->newEntity(['email' => $email]);
+			$account->status = 'pending';
+			$this->accounts->saveOrFail($account);
+			$this->passwords->set($account, $password);
 			$token = $this->tokens->issue(
-				$user,
+				$account,
 				AccountTokenService::EMAIL_VERIFICATION,
 				Configure::read('Foundation.tokens.emailVerificationTtl', '+24 hours'),
 			);
 
-			return new RegistrationResult($user, $token);
+			return new RegistrationResult($account, $token);
 		});
-		EventManager::instance()->dispatch(new Event('Foundation.User.registered', $this, ['user' => $result->user]));
+		EventManager::instance()->dispatch(new Event('Foundation.Account.registered', $this, ['account' => $result->account]));
 
 		return $result;
 	}

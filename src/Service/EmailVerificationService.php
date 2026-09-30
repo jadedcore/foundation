@@ -7,29 +7,29 @@ use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventManager;
 use Cake\I18n\DateTime;
-use Foundation\Model\Entity\User;
-use Foundation\Model\Table\UsersTable;
+use Foundation\Model\Entity\Account;
+use Foundation\Model\Table\AccountsTable;
 
 final class EmailVerificationService {
 	/** Create the email verification service. */
-	public function __construct(private readonly UsersTable $users, private readonly AccountTokenService $tokens) {
+	public function __construct(private readonly AccountsTable $accounts, private readonly AccountTokenService $tokens) {
 	}
 
 	/** Verify an email token and update the corresponding account. */
-	public function verify(string $plainToken): User {
+	public function verify(string $plainToken): Account {
 		$record = $this->tokens->resolve($plainToken, AccountTokenService::EMAIL_VERIFICATION);
-		/** @var \Foundation\Model\Entity\User $user */
-		$user = $record->user;
-		$this->users->getConnection()->transactional(function () use ($user, $record): void {
-			$user->email_verified_at = DateTime::now();
-			if (Configure::read('Foundation.users.activateOnEmailVerification', true)) {
-				$user->status = 'active';
+		/** @var \Foundation\Model\Entity\Account $account */
+		$account = $record->account;
+		$this->accounts->getConnection()->transactional(function () use ($account, $record): void {
+			$account->email_verified_at = DateTime::now();
+			if (Configure::read('Foundation.accounts.activateOnEmailVerification', true)) {
+				$account->status = 'active';
 			}
-			$this->users->saveOrFail($user);
+			$this->accounts->saveOrFail($account);
 			$this->tokens->consume($record);
 		});
-		EventManager::instance()->dispatch(new Event('Foundation.User.emailVerified', $this, ['user' => $user]));
+		EventManager::instance()->dispatch(new Event('Foundation.Account.emailVerified', $this, ['account' => $account]));
 
-		return $user;
+		return $account;
 	}
 }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 use Migrations\BaseMigration;
 
 class CreateFoundationUsers extends BaseMigration {
-	/** Create the Foundation users table. */
+	/** Create the Foundation accounts table. */
 	public function change(): void {
-		$this->table('foundation_users', ['id' => false, 'primary_key' => ['id']])
+		$this->table('foundation_accounts', ['id' => false, 'primary_key' => ['id']])
 			->addColumn('id', 'char', ['limit' => 26, 'null' => false])
 			->addColumn('email', 'string', ['limit' => 320, 'null' => false])
 			->addColumn('password_hash', 'string', ['limit' => 255, 'null' => true])

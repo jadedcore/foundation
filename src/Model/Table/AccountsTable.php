@@ -8,27 +8,27 @@ use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
-use Foundation\Model\Entity\User;
+use Foundation\Model\Entity\Account;
 
-class UsersTable extends Table {
+class AccountsTable extends Table {
 	/** @inheritDoc */
 	public function initialize(array $config): void {
 		parent::initialize($config);
-		$this->setTable(Configure::read('Foundation.users.table', 'foundation_users'));
+		$this->setTable(Configure::read('Foundation.accounts.table', 'foundation_accounts'));
 		$this->setPrimaryKey('id');
 		$this->setDisplayField('email');
-		$this->setEntityClass(User::class);
+		$this->setEntityClass(Account::class);
 		$this->getSchema()->setColumnType('id', 'foundation_ulid');
 		$this->addBehavior('Timestamp');
 		$this->addBehavior('Foundation.Ulid');
 		$this->hasMany('AccountTokens', [
 			'className' => 'Foundation.AccountTokens',
-			'foreignKey' => 'user_id',
+			'foreignKey' => 'account_id',
 			'dependent' => true,
 		]);
 		$this->hasMany('PersistentLogins', [
 			'className' => 'Foundation.PersistentLogins',
-			'foreignKey' => 'user_id',
+			'foreignKey' => 'account_id',
 			'dependent' => true,
 		]);
 	}
@@ -52,7 +52,7 @@ class UsersTable extends Table {
 	/** Limit authentication to configured eligible statuses. */
 	public function findForAuthentication(SelectQuery $query): SelectQuery {
 		return $query->where([
-			$this->aliasField('status') . ' IN' => Configure::read('Foundation.users.activeStatuses', ['active']),
+			$this->aliasField('status') . ' IN' => Configure::read('Foundation.accounts.activeStatuses', ['active']),
 		]);
 	}
 }

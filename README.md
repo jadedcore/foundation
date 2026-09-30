@@ -1,10 +1,10 @@
 # Foundation
 
-Reusable CakePHP 5 infrastructure for user identity, account lifecycle, authentication integration,
+Reusable CakePHP 5 infrastructure for account identity, account lifecycle, authentication integration,
 ULIDs, request actor context, and `created_by`/`modified_by` auditing.
 
 Foundation deliberately does not define product roles, profiles, permissions, layouts, or business
-onboarding. Applications extend users with associated profile tables and lifecycle event listeners.
+onboarding. Applications extend accounts with associated profile tables and lifecycle event listeners.
 
 ## Install in a host application
 
