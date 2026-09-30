@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 $localAutoload = dirname(__DIR__) . '/vendor/autoload.php';
 $hostAutoload = dirname(__DIR__, 3) . '/vendor/autoload.php';
-require file_exists($localAutoload) ? $localAutoload : $hostAutoload;
+require_once file_exists($localAutoload) ? $localAutoload : $hostAutoload;
 
 use Cake\Cache\Cache;
 use Cake\Cache\Engine\NullEngine;
@@ -11,13 +11,15 @@ use Cake\Database\Connection;
 use Cake\Database\Driver\Sqlite;
 use Cake\Datasource\ConnectionManager;
 
-require dirname(__DIR__) . '/config/bootstrap.php';
+require_once dirname(__DIR__) . '/config/bootstrap.php';
 Cache::setConfig('_cake_core_', ['className' => NullEngine::class]);
 ConnectionManager::setConfig('default', [
 	'className' => Connection::class,
 	'driver' => Sqlite::class,
 	'database' => ':memory:',
 ]);
+
+/** @var \Cake\Database\Connection $connection */
 $connection = ConnectionManager::get('default');
 $connection->execute('CREATE TABLE foundation_users (
 	id CHAR(26) PRIMARY KEY,
