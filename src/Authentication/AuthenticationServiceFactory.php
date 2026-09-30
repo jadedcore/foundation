@@ -25,7 +25,7 @@ final class AuthenticationServiceFactory {
 				'fields' => ['username' => 'email', 'password' => 'password_hash'],
 				'resolver' => [
 					'className' => 'Authentication.Orm',
-					'userModel' => Configure::read('Foundation.users.model', 'Foundation.Users'),
+					'userModel' => Configure::read('Foundation.accounts.model', 'Foundation.Accounts'),
 					'finder' => 'forAuthentication',
 				],
 			],

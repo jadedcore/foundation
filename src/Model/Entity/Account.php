@@ -5,7 +5,7 @@ namespace Foundation\Model\Entity;
 
 use Cake\ORM\Entity;
 
-class User extends Entity {
+class Account extends Entity {
 	protected array $_accessible = ['email' => true];
 	protected array $_hidden = ['password_hash'];
 

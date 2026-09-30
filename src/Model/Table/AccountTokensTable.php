@@ -15,9 +15,9 @@ class AccountTokensTable extends Table {
 		$this->setPrimaryKey('id');
 		$this->setEntityClass(AccountToken::class);
 		$this->getSchema()->setColumnType('id', 'foundation_ulid');
-		$this->getSchema()->setColumnType('user_id', 'foundation_ulid');
+		$this->getSchema()->setColumnType('account_id', 'foundation_ulid');
 		$this->addBehavior('Timestamp', ['modified' => false]);
 		$this->addBehavior('Foundation.Ulid');
-		$this->belongsTo('Users', ['className' => 'Foundation.Users', 'foreignKey' => 'user_id']);
+		$this->belongsTo('Accounts', ['className' => 'Foundation.Accounts', 'foreignKey' => 'account_id']);
 	}
 }

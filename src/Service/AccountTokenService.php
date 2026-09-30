@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Foundation\Service;
 
 use Cake\I18n\DateTime;
+use Foundation\Model\Entity\Account;
 use Foundation\Model\Entity\AccountToken;
-use Foundation\Model\Entity\User;
 use Foundation\Model\Table\AccountTokensTable;
 use RuntimeException;
 
@@ -18,16 +18,16 @@ final class AccountTokenService {
 	}
 
 	/** Issue a purpose-scoped, single-use account token. */
-	public function issue(User $user, string $purpose, string $ttl): Token {
+	public function issue(Account $account, string $purpose, string $ttl): Token {
 		$this->tokens->updateAll(['consumed_at' => DateTime::now()], [
-			'user_id' => (string)$user->id,
+			'account_id' => (string)$account->id,
 			'purpose' => $purpose,
 			'consumed_at IS' => null,
 		]);
 		$selector = bin2hex(random_bytes(9));
 		$validator = $this->base64Url(random_bytes(32));
 		$record = $this->tokens->newEmptyEntity();
-		$record->user_id = (string)$user->id;
+		$record->account_id = (string)$account->id;
 		$record->purpose = $purpose;
 		$record->selector = $selector;
 		$record->token_hash = hash('sha256', $validator);
@@ -45,7 +45,7 @@ final class AccountTokenService {
 			'purpose' => $purpose,
 			'consumed_at IS' => null,
 			'expires_at >' => DateTime::now(),
-		])->contain(['Users'])->first();
+		])->contain(['Accounts'])->first();
 		if ($record === null || !hash_equals($record->token_hash, hash('sha256', $validator))) {
 			throw new RuntimeException('The account token is invalid or has expired.');
 		}

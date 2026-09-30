@@ -5,8 +5,8 @@ namespace Foundation\Service;
 
 use Cake\Core\Configure;
 use Cake\I18n\DateTime;
+use Foundation\Model\Entity\Account;
 use Foundation\Model\Entity\PersistentLogin;
-use Foundation\Model\Entity\User;
 use Foundation\Model\Table\PersistentLoginsTable;
 use RuntimeException;
 
@@ -15,17 +15,17 @@ final class PersistentLoginService {
 	public function __construct(private readonly PersistentLoginsTable $logins) {
 	}
 
-	/** Issue a persistent login token for a user. */
-	public function issue(User $user): PersistentLoginResult {
+	/** Issue a persistent login token for an account. */
+	public function issue(Account $account): PersistentLoginResult {
 		$record = $this->logins->newEmptyEntity();
-		$record->user_id = (string)$user->id;
+		$record->account_id = (string)$account->id;
 		$record->selector = bin2hex(random_bytes(9));
 		$validator = $this->base64Url(random_bytes(32));
 		$record->validator_hash = hash('sha256', $validator);
 		$record->expires_at = new DateTime(Configure::read('Foundation.rememberMe.ttl', '+30 days'));
 		$this->logins->saveOrFail($record);
 
-		return new PersistentLoginResult($user, $record, $record->selector . '.' . $validator);
+		return new PersistentLoginResult($account, $record, $record->selector . '.' . $validator);
 	}
 
 	/** Validate and rotate a persistent login token. */
@@ -36,7 +36,7 @@ final class PersistentLoginService {
 			'selector' => $selector,
 			'revoked_at IS' => null,
 			'expires_at >' => DateTime::now(),
-		])->contain(['Users'])->first();
+		])->contain(['Accounts'])->first();
 		if ($record === null || !hash_equals($record->validator_hash, hash('sha256', $validator))) {
 			throw new RuntimeException('The persistent login token is invalid or expired.');
 		}
@@ -45,7 +45,7 @@ final class PersistentLoginService {
 		$record->last_used_at = DateTime::now();
 		$this->logins->saveOrFail($record);
 
-		return new PersistentLoginResult($record->user, $record, $record->selector . '.' . $newValidator);
+		return new PersistentLoginResult($record->account, $record, $record->selector . '.' . $newValidator);
 	}
 
 	/** Revoke one persistent login. */
@@ -54,10 +54,10 @@ final class PersistentLoginService {
 		$this->logins->saveOrFail($record);
 	}
 
-	/** Revoke all persistent logins belonging to a user. */
-	public function revokeAll(User $user): void {
+	/** Revoke all persistent logins belonging to an account. */
+	public function revokeAll(Account $account): void {
 		$this->logins->updateAll(['revoked_at' => DateTime::now()], [
-			'user_id' => (string)$user->id,
+			'account_id' => (string)$account->id,
 			'revoked_at IS' => null,
 		]);
 	}

@@ -4,16 +4,16 @@ Foundation owns authentication identity only. Keep product data in an applicatio
 one-to-one association:
 
 ```php
-$users = $this->fetchTable('Foundation.Users');
-$users->hasOne('UserProfiles', [
+$accounts = $this->fetchTable('Foundation.Accounts');
+$accounts->hasOne('UserProfiles', [
     'className' => 'Afterlife.UserProfiles',
-    'foreignKey' => 'user_id',
+    'foreignKey' => 'account_id',
 ]);
 ```
 
-Create the profile from a listener attached to `Foundation.User.registered`. Other lifecycle events
-currently emitted are `Foundation.User.emailVerified`, `Foundation.User.passwordResetRequested`,
-and `Foundation.User.passwordReset`.
+Create the profile from a listener attached to `Foundation.Account.registered`. Other lifecycle events
+currently emitted are `Foundation.Account.emailVerified`, `Foundation.Account.passwordResetRequested`,
+and `Foundation.Account.passwordReset`.
 
 Applications own roles, permissions, entity policies, and onboarding. Do not add those columns or
 associations to Foundation itself.
@@ -41,5 +41,5 @@ method to `Foundation\Authentication\AuthenticationServiceFactory` when Foundati
 return (new AuthenticationServiceFactory())->create($request);
 ```
 
-If the product owns login, configure CakePHP Authentication directly against `Foundation.Users`
+If the product owns login, configure CakePHP Authentication directly against `Foundation.Accounts`
 and the `forAuthentication` finder.

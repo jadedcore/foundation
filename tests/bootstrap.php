@@ -21,7 +21,7 @@ ConnectionManager::setConfig('default', [
 
 /** @var \Cake\Database\Connection $connection */
 $connection = ConnectionManager::get('default');
-$connection->execute('CREATE TABLE foundation_users (
+$connection->execute('CREATE TABLE foundation_accounts (
 	id CHAR(26) PRIMARY KEY,
 	email VARCHAR(320) NOT NULL UNIQUE,
 	password_hash VARCHAR(255),
@@ -34,7 +34,7 @@ $connection->execute('CREATE TABLE foundation_users (
 	modified_by CHAR(26))');
 $connection->execute('CREATE TABLE foundation_account_tokens (
 	id CHAR(26) PRIMARY KEY,
-	user_id CHAR(26) NOT NULL,
+	account_id CHAR(26) NOT NULL,
 	purpose VARCHAR(40) NOT NULL,
 	selector VARCHAR(32) NOT NULL UNIQUE,
 	token_hash CHAR(64) NOT NULL,
@@ -43,7 +43,7 @@ $connection->execute('CREATE TABLE foundation_account_tokens (
 	created DATETIME NOT NULL)');
 $connection->execute('CREATE TABLE foundation_persistent_logins (
 	id CHAR(26) PRIMARY KEY,
-	user_id CHAR(26) NOT NULL,
+	account_id CHAR(26) NOT NULL,
 	selector VARCHAR(32) NOT NULL UNIQUE,
 	validator_hash CHAR(64) NOT NULL,
 	expires_at DATETIME NOT NULL,

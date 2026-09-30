@@ -11,7 +11,7 @@ use Symfony\Component\Uid\Ulid;
 
 class UlidBehaviorTest extends TestCase {
 	public function testAssignsAValidUlid(): void {
-		$table = TableRegistry::getTableLocator()->get('Foundation.Users');
+		$table = TableRegistry::getTableLocator()->get('Foundation.Accounts');
 		$entity = $table->newEntity(['email' => 'person@example.com', 'status' => 'pending']);
 		$table->saveOrFail($entity);
 		$this->assertTrue(Ulid::isValid((string)$entity->id));
