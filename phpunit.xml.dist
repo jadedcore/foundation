@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit colors="true" bootstrap="tests/bootstrap.php" cacheDirectory=".phpunit.cache">
-    <testsuites>
-        <testsuite name="Foundation">
-            <directory>tests/TestCase</directory>
-        </testsuite>
-    </testsuites>
+	<testsuites>
+		<testsuite name="Foundation">
+			<directory>tests/TestCase</directory>
+		</testsuite>
+	</testsuites>
 </phpunit>
