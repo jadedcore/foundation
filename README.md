@@ -1,4 +1,4 @@
-# Cake Foundation
+# Foundation
 
 Reusable CakePHP 5 infrastructure for user identity, account lifecycle, authentication integration,
 ULIDs, request actor context, and `created_by`/`modified_by` auditing.
@@ -25,3 +25,11 @@ The host application remains responsible for adding authentication middleware an
 `AuthenticationServiceProviderInterface` implementation.
 
 See `config/foundation.php` for safe defaults and extension points.
+
+## License
+
+This project is licensed under the BSD 3-Clause License.
+
+Copyright (c) 2026, Chris Valliere
+
+See the [License](License) file for deatails.

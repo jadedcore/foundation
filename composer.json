@@ -1,29 +1,49 @@
 {
-    "name": "jadedcore/cake-foundation",
-    "description": "Reusable identity, account lifecycle, ULID, actor context, and auditing infrastructure for CakePHP 5 applications.",
-    "type": "cakephp-plugin",
-    "license": "MIT",
-    "require": {
-        "php": "^8.4",
-        "cakephp/authentication": "^4.0",
-        "cakephp/authorization": "^3.0",
-        "cakephp/cakephp": "^5.3",
-        "cakephp/migrations": "^5.0",
-        "symfony/uid": "^8.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "Foundation\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Foundation\\Test\\": "tests/"
-        }
-    },
-    "extra": {
-        "cakephp-plugin": {
-            "name": "Foundation"
-        }
-    }
+	"name": "jadedcore/cake-foundation",
+	"description": "Reusable identity, account lifecycle, ULID, actor context, and auditing infrastructure for CakePHP 5 applications.",
+	"type": "cakephp-plugin",
+	"license": "BSD-3-Clause",
+	"homepage": "https://github.com/jadedcore/foundation",
+	"keywords": [
+		"cakephp",
+		"cakephp-plugin",
+		"authentication",
+		"authorization",
+		"identity",
+		"accounts",
+		"ulid",
+		"auditing"
+	],
+	"authors": [
+		{
+			"name": "Chris Valliere"
+		}
+	],
+	"support": {
+		"issues": "https://github.com/jadedcore/foundation/issues",
+		"source": "https://github.com/jadedcore/foundation"
+	},
+	"require": {
+		"php": "^8.4",
+		"cakephp/authentication": "^4.0",
+		"cakephp/authorization": "^3.0",
+		"cakephp/cakephp": "^5.3",
+		"cakephp/migrations": "^5.0",
+		"symfony/uid": "^8.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"Foundation\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Foundation\\Test\\": "tests/"
+		}
+	},
+	"extra": {
+		"cakephp-plugin": {
+			"name": "Foundation"
+		}
+	}
 }
