@@ -52,7 +52,8 @@ class AccountsTable extends Table {
 	/** Limit authentication to configured eligible statuses. */
 	public function findForAuthentication(SelectQuery $query): SelectQuery {
 		return $query->where([
-			$this->aliasField('status') . ' IN' => Configure::read('Foundation.accounts.activeStatuses', ['active']),
+			$this->aliasField('status') . ' IN' =>
+				Configure::read('Foundation.accounts.activeStatuses', ['active']),
 		]);
 	}
 }
