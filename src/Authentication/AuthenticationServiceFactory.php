@@ -9,14 +9,18 @@ use Cake\Core\Configure;
 use Psr\Http\Message\ServerRequestInterface;
 
 final class AuthenticationServiceFactory {
-	/** Build the Foundation authentication service for a request. */
+	/**
+	 * Build the Foundation authentication service for a request.
+	 */
 	public function create(ServerRequestInterface $request): AuthenticationServiceInterface {
 		$loginUrl = Configure::read('Foundation.authentication.loginUrl', '/foundation/login');
 		$service = new AuthenticationService([
 			'unauthenticatedRedirect' => $loginUrl,
 			'queryParam' => Configure::read('Foundation.authentication.queryParam', 'redirect'),
 		]);
-		$service->loadAuthenticator('Authentication.Session');
+		$service->loadAuthenticator('Authentication.PrimaryKeySession', [
+			'idField' => 'id'
+		]);
 		$service->loadAuthenticator('Authentication.Form', [
 			'loginUrl' => $loginUrl,
 			'fields' => ['username' => 'email', 'password' => 'password'],

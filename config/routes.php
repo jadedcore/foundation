@@ -29,18 +29,24 @@ return static function (RouteBuilder $routes): void {
 			['controller' => 'Accounts', 'action' => 'register'],
 			['_name' => 'foundation:register'],
 		);
-		$builder->connect('/verify/{token}', ['controller' => 'Accounts', 'action' => 'verifyEmail'])
+		$builder->connect(
+			'/verify/{token}',
+			['controller' => 'Accounts', 'action' => 'verifyEmail'],
+			['_name' => 'foundation:verify-email']
+		)
 			->setPass(['token'])
-			->setPatterns(['token' => '[A-Za-z0-9._-]+'])
-			->setName('foundation:verify-email');
+			->setPatterns(['token' => '[A-Za-z0-9._-]+']);
 		$builder->connect(
 			'/forgot-password',
 			['controller' => 'Accounts', 'action' => 'forgotPassword'],
 			['_name' => 'foundation:forgot-password'],
 		);
-		$builder->connect('/reset-password/{token}', ['controller' => 'Accounts', 'action' => 'resetPassword'])
+		$builder->connect(
+			'/reset-password/{token}',
+			['controller' => 'Accounts', 'action' => 'resetPassword'],
+			['_name' => 'foundation:reset-password']
+		)
 			->setPass(['token'])
-			->setPatterns(['token' => '[A-Za-z0-9._-]+'])
-			->setName('foundation:reset-password');
+			->setPatterns(['token' => '[A-Za-z0-9._-]+']);
 	});
 };
