@@ -6,6 +6,7 @@ namespace Foundation\Controller;
 use Cake\Core\Configure;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
+use Cake\Log\Log;
 use Cake\ORM\Exception\PersistenceFailedException;
 use Foundation\{
 	Mailer\AccountMailer,
@@ -115,7 +116,8 @@ class AccountsController extends AppController {
 	private function sendVerificationEmail(RegistrationResult $result): Response {
 		try {
 			(new AccountMailer())->sendEmailVerification($result->account, $result->verificationToken->plainText);
-		} catch (Throwable) {
+		} catch (Throwable $e) {
+			Log::error($e);
 			$this->Flash->error(
 				'Your account was created, but we could not send the verification email. Please contact support.',
 			);

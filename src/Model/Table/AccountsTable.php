@@ -44,7 +44,8 @@ class AccountsTable extends Table {
 
 	/** @inheritDoc */
 	public function buildRules(RulesChecker $rules): RulesChecker {
-		$rules->add($rules->isUnique(['email']), ['errorField' => 'email']);
+		$message = 'An account using this email address already exists.';
+		$rules->add($rules->isUnique(['email'], $message), ['errorField' => 'email']);
 
 		return $rules;
 	}
