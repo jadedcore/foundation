@@ -6,13 +6,19 @@ namespace Foundation\Controller;
 use Cake\Core\Configure;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
-use Foundation\Mailer\AccountMailer;
-use Foundation\Model\Table\AccountsTable;
-use Foundation\Service\AccountTokenService;
-use Foundation\Service\EmailVerificationService;
-use Foundation\Service\PasswordResetService;
-use Foundation\Service\PasswordService;
-use Foundation\Service\RegistrationService;
+use Cake\ORM\Exception\PersistenceFailedException;
+use Foundation\{
+	Mailer\AccountMailer,
+	Model\Entity\Account,
+	Model\Table\AccountsTable,
+	Service\AccountTokenService,
+	Service\EmailVerificationService,
+	Service\PasswordResetService,
+	Service\PasswordService,
+	Service\RegistrationResult,
+	Service\RegistrationService
+};
+use InvalidArgumentException;
 use Throwable;
 
 /**
@@ -21,6 +27,7 @@ use Throwable;
  *
  * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
  * @property \Cake\Controller\Component\FlashComponent $Flash
+ * @property \Foundation\Model\Table\AccountsTable $Accounts
  */
 class AccountsController extends AppController {
 	/** @inheritDoc */
@@ -63,27 +70,12 @@ class AccountsController extends AppController {
 	/** Register a pending account. */
 	public function register(): ?Response {
 		$this->request->allowMethod(['get', 'post']);
-		$accounts = $this->accounts();
-		$account = $accounts->newEmptyEntity();
+		$account = $this->Accounts->newEmptyEntity();
 		if ($this->request->is('post')) {
-			$password = (string)$this->request->getData('password');
-			$passwordConfirmation = (string)$this->request->getData('password_confirmation');
-			if ($password !== $passwordConfirmation) {
-				$account->setError('password_confirmation', 'Passwords do not match.');
-			} else {
-				try {
-					$result = $this->registrationService($accounts)->register(
-						(string)$this->request->getData('email'),
-						$password,
-					);
-					(new AccountMailer())->sendEmailVerification($result->account, $result->verificationToken->plainText);
-					$this->Flash->success('Check your email to verify your account.');
-
-					return $this->redirect(['action' => 'login']);
-				} catch (Throwable $exception) {
-					$this->Flash->error('The account could not be created.');
-					$account = $accounts->newEntity(['email' => $this->request->getData('email')]);
-				}
+			$account = $this->Accounts->newEntity(['email' => $this->request->getData('email')]);
+			$result = $this->attemptRegistration($this->Accounts, $account);
+			if ($result !== null) {
+				return $this->sendVerificationEmail($result);
 			}
 		}
 		$this->set(compact('account'));
@@ -91,11 +83,55 @@ class AccountsController extends AppController {
 		return null;
 	}
 
+	/** Validate the registration form and attempt to create the account. */
+	private function attemptRegistration(AccountsTable $accountsTable, Account $account): ?RegistrationResult {
+		$password = (string)$this->request->getData('password');
+		if ($password !== (string)$this->request->getData('password_confirmation')) {
+			$account->setError('password_confirmation', 'Passwords do not match.');
+
+			return null;
+		}
+
+		try {
+			return $this->registrationService($accountsTable)->register(
+				(string)$this->request->getData('email'),
+				$password,
+			);
+		} catch (InvalidArgumentException $exception) {
+			$account->setError('password', $exception->getMessage());
+		} catch (PersistenceFailedException $exception) {
+			$errors = $exception->getEntity()->getErrors();
+			if ($errors !== []) {
+				$account->setErrors($errors, true);
+			} else {
+				$this->Flash->error('The account could not be created.');
+			}
+		}
+
+		return null;
+	}
+
+	/** Send the verification email and redirect to login. */
+	private function sendVerificationEmail(RegistrationResult $result): Response {
+		try {
+			(new AccountMailer())->sendEmailVerification($result->account, $result->verificationToken->plainText);
+		} catch (Throwable) {
+			$this->Flash->error(
+				'Your account was created, but we could not send the verification email. Please contact support.',
+			);
+
+			return $this->redirect(['action' => 'login']);
+		}
+
+		$this->Flash->success('Check your email to verify your account.');
+
+		return $this->redirect(['action' => 'login']);
+	}
+
 	/** Verify an account email address. */
 	public function verifyEmail(string $token): Response {
 		try {
-			$accounts = $this->accounts();
-			(new EmailVerificationService($accounts, $this->tokenService()))->verify($token);
+			(new EmailVerificationService($this->Accounts, $this->tokenService()))->verify($token);
 			$this->Flash->success('Your email address has been verified.');
 		} catch (Throwable) {
 			$this->Flash->error('The verification link is invalid or has expired.');
@@ -112,7 +148,7 @@ class AccountsController extends AppController {
 			$token = $service->request((string)$this->request->getData('email'));
 			if ($token !== null) {
 				/** @var \Foundation\Model\Entity\Account $account */
-				$account = $token->record->get('account') ?? $this->accounts()->get($token->record->account_id);
+				$account = $token->record->get('account') ?? $this->Accounts->get($token->record->account_id);
 				(new AccountMailer())->sendPasswordReset($account, $token->plainText);
 			}
 			$this->Flash->success('If an eligible account exists, a reset link has been sent.');
@@ -147,12 +183,6 @@ class AccountsController extends AppController {
 		return null;
 	}
 
-	/** Return the configured Foundation accounts table. */
-	private function accounts(): AccountsTable {
-		/** @var \Foundation\Model\Table\AccountsTable */
-		return $this->fetchTable('Foundation.Accounts');
-	}
-
 	/** Build the account token service. */
 	private function tokenService(): AccountTokenService {
 		/** @var \Foundation\Model\Table\AccountTokensTable $tokens */
@@ -168,10 +198,9 @@ class AccountsController extends AppController {
 
 	/** Build the password reset service. */
 	private function passwordResetService(): PasswordResetService {
-		$accounts = $this->accounts();
 		/** @var \Foundation\Model\Table\PersistentLoginsTable $logins */
 		$logins = $this->fetchTable('Foundation.PersistentLogins');
 
-		return new PasswordResetService($accounts, $this->tokenService(), new PasswordService($accounts), $logins);
+		return new PasswordResetService($this->Accounts, $this->tokenService(), new PasswordService($this->Accounts), $logins);
 	}
 }
