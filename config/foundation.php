@@ -3,10 +3,6 @@ declare(strict_types=1);
 
 return [
 	'Foundation' => [
-		'routes' => [
-			'enabled' => false,
-			'prefix' => '/foundation',
-		],
 		'accounts' => [
 			'table' => 'foundation_accounts',
 			'model' => 'Foundation.Accounts',
@@ -14,19 +10,35 @@ return [
 			'activeStatuses' => ['active'],
 			'activateOnEmailVerification' => true,
 		],
-		'tokens' => [
-			'table' => 'foundation_account_tokens',
-			'emailVerificationTtl' => '+24 hours',
-			'passwordResetTtl' => '+1 hour',
-		],
-		'passwords' => [
-			'minLength' => 12,
+		'audit' => [
+			'onMissingActor' => 'skip',
 		],
 		'authentication' => [
 			'loginUrl' => '/foundation/login',
 			'loginRedirect' => '/',
 			'logoutRedirect' => '/foundation/login',
 			'queryParam' => 'redirect',
+		],
+		'authorization' => [
+			'exemptActions' => [
+				'Foundation' => [
+					'Accounts' => [
+						'login',
+						'register',
+						'forgotPassword',
+						'resetPassword',
+						'verifyEmail'
+					]
+				]
+			]
+		],
+		'email' => [
+			'profile' => 'default',
+			'from' => null,
+			'applicationName' => 'Application',
+		],
+		'passwords' => [
+			'minLength' => 12,
 		],
 		'rememberMe' => [
 			'enabled' => false,
@@ -37,13 +49,14 @@ return [
 			'httpOnly' => true,
 			'sameSite' => 'Lax',
 		],
-		'email' => [
-			'profile' => 'default',
-			'from' => null,
-			'applicationName' => 'Application',
+		'routes' => [
+			'enabled' => false,
+			'prefix' => '/foundation',
 		],
-		'audit' => [
-			'onMissingActor' => 'skip',
+		'tokens' => [
+			'table' => 'foundation_account_tokens',
+			'emailVerificationTtl' => '+24 hours',
+			'passwordResetTtl' => '+1 hour',
 		],
 	],
 ];
