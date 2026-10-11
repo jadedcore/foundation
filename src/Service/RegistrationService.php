@@ -6,7 +6,6 @@ namespace Foundation\Service;
 use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventManager;
-use Foundation\Model\Entity\Account;
 use Foundation\Model\Table\AccountsTable;
 
 final class RegistrationService {
