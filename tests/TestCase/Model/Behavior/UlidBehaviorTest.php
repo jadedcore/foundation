@@ -17,6 +17,19 @@ class UlidBehaviorTest extends TestCase {
 		$this->assertTrue(Ulid::isValid((string)$entity->id));
 	}
 
+	public function testMapsConfiguredFieldsToFoundationUlidType(): void {
+		$tables = TableRegistry::getTableLocator();
+		$accounts = $tables->get('Foundation.Accounts');
+		$tokens = $tables->get('Foundation.AccountTokens');
+		$logins = $tables->get('Foundation.PersistentLogins');
+
+		$this->assertSame('foundation_ulid', $accounts->getSchema()->getColumnType('id'));
+		$this->assertSame('foundation_ulid', $tokens->getSchema()->getColumnType('id'));
+		$this->assertSame('foundation_ulid', $tokens->getSchema()->getColumnType('account_id'));
+		$this->assertSame('foundation_ulid', $logins->getSchema()->getColumnType('id'));
+		$this->assertSame('foundation_ulid', $logins->getSchema()->getColumnType('account_id'));
+	}
+
 	public function testDatabaseTypeRoundTripsUlid(): void {
 		$driver = new Mysql();
 		$type = TypeFactory::build('foundation_ulid');
