@@ -7,7 +7,8 @@ use ArrayObject;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\EventInterface;
 use Cake\ORM\Behavior;
-use RuntimeException;
+use Foundation\Exception\WhoDidItException;
+use Foundation\Utility\ActorContextInterface;
 
 class WhoDidItBehavior extends Behavior {
 	protected array $_defaultConfig = [
@@ -16,8 +17,10 @@ class WhoDidItBehavior extends Behavior {
 		'actorOption' => 'actor_id',
 		'skipModifiedByOption' => 'skip_modified_by',
 		'actorResolver' => null,
+		'actorContext' => null,
 		'onMissingActor' => 'skip',
 		'fallbackValue' => null,
+		'primaryKeyField' => 'id',
 	];
 
 	/** @inheritDoc */
@@ -25,10 +28,18 @@ class WhoDidItBehavior extends Behavior {
 		parent::initialize($config);
 		$resolver = $this->getConfig('actorResolver');
 		if ($resolver !== null && !is_callable($resolver)) {
-			throw new RuntimeException('WhoDidIt actorResolver must be callable.');
+			throw new WhoDidItException('WhoDidIt actorResolver must be callable.');
 		}
-		if (!in_array($this->getConfig('onMissingActor'), ['skip', 'error', 'value'], true)) {
-			throw new RuntimeException('WhoDidIt onMissingActor must be skip, error, or value.');
+		$actorContext = $this->getConfig('actorContext');
+		if ($actorContext !== null && !$actorContext instanceof ActorContextInterface) {
+			throw new WhoDidItException('WhoDidIt actorContext must implement ActorContextInterface.');
+		}
+		$validModes = ['skip', 'error', 'entityPrimaryKey', 'value', 'callback'];
+		if (!in_array($this->getConfig('onMissingActor'), $validModes, true)) {
+			throw new WhoDidItException('WhoDidIt onMissingActor must be skip, error, entityPrimaryKey, value, or callback.');
+		}
+		if ($this->getConfig('onMissingActor') === 'callback' && !is_callable($this->getConfig('fallbackValue'))) {
+			throw new WhoDidItException('WhoDidIt fallbackValue must be callable when onMissingActor is callback.');
 		}
 	}
 
@@ -55,21 +66,30 @@ class WhoDidItBehavior extends Behavior {
 	/** Resolve an actor from save options, a callback, or configured fallback. */
 	private function resolveActorId(EntityInterface $entity, ArrayObject $options): mixed {
 		$option = $this->getConfig('actorOption');
-		if (array_key_exists($option, $options) && $options[$option] !== null && $options[$option] !== '') {
+		if ($options->offsetExists($option) && $options[$option] !== null && $options[$option] !== '') {
 			return $options[$option];
 		}
+		$value = null;
 		$resolver = $this->getConfig('actorResolver');
 		if ($resolver !== null) {
 			$value = $resolver($entity, $options, $this->table());
-			if ($value !== null && $value !== '') {
-				return $value;
+		}
+		if ($value === null || $value === '') {
+			$actorContext = $this->getConfig('actorContext');
+			if ($actorContext instanceof ActorContextInterface) {
+				$value = $actorContext->actorId();
 			}
+		}
+		if ($value !== null && $value !== '') {
+			return $value;
 		}
 
 		return match ($this->getConfig('onMissingActor')) {
 			'skip' => null,
+			'entityPrimaryKey' => $entity->get($this->getConfig('primaryKeyField')),
 			'value' => $this->getConfig('fallbackValue'),
-			'error' => throw new RuntimeException('WhoDidIt could not resolve an actor ID.'),
+			'callback' => ($this->getConfig('fallbackValue'))($entity, $this->table()),
+			'error' => throw new WhoDidItException('WhoDidIt could not resolve an actor ID.'),
 		};
 	}
 }

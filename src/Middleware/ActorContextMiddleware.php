@@ -22,26 +22,17 @@ final class ActorContextMiddleware implements MiddlewareInterface {
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface {
 		$identity = $request->getAttribute('identity');
 		$actorId = $this->resolver !== null ? ($this->resolver)($identity, $request) : $this->defaultActorId($identity);
-		$this->context->setActorId($actorId);
-		try {
-			return $handler->handle($request);
-		} finally {
-			$this->context->clear();
-		}
+
+		return $this->context->runAs($actorId, fn(): ResponseInterface => $handler->handle($request));
 	}
 
 	/** Resolve a conventional identity identifier. */
 	private function defaultActorId(mixed $identity): string|int|null {
-		if ($identity === null) {
-			return null;
-		}
-		if (method_exists($identity, 'getIdentifier')) {
-			return $identity->getIdentifier();
-		}
-		if (isset($identity->id)) {
-			return $identity->id;
-		}
-
-		return null;
+		return match (true) {
+			$identity === null => null,
+			method_exists($identity, 'getIdentifier') => $identity->getIdentifier(),
+			isset($identity->id) => $identity->id,
+			default => null,
+		};
 	}
 }

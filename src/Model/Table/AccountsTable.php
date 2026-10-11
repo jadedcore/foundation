@@ -8,7 +8,11 @@ use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
-use Foundation\Model\Entity\Account;
+use Foundation\{
+	Exception\WhoDidItException,
+	Model\Entity\Account,
+	Utility\ActorContextInterface
+};
 
 class AccountsTable extends Table {
 	/** @inheritDoc */
@@ -18,8 +22,18 @@ class AccountsTable extends Table {
 		$this->setPrimaryKey('id');
 		$this->setDisplayField('email');
 		$this->setEntityClass(Account::class);
-		$this->addBehavior('Timestamp');
+
+		$actorContext = Configure::read('Foundation.actorContext');
+		if (!$actorContext instanceof ActorContextInterface) {
+			throw new WhoDidItException('Foundation actor context has not been configured.');
+		}
+
 		$this->addBehavior('Foundation.Ulid', ['fields' => ['id']]);
+		$this->addBehavior('Foundation.WhoDidIt', [
+			'actorContext' => $actorContext,
+			'onMissingActor' => 'entityPrimaryKey'
+		]);
+		$this->addBehavior('Timestamp');
 		$this->hasMany('AccountTokens', [
 			'className' => 'Foundation.AccountTokens',
 			'foreignKey' => 'account_id',

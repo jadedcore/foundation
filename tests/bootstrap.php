@@ -7,11 +7,14 @@ require_once file_exists($localAutoload) ? $localAutoload : $hostAutoload;
 
 use Cake\Cache\Cache;
 use Cake\Cache\Engine\NullEngine;
+use Cake\Core\Configure;
 use Cake\Database\Connection;
 use Cake\Database\Driver\Sqlite;
 use Cake\Datasource\ConnectionManager;
+use Foundation\Utility\ActorContext;
 
 require_once dirname(__DIR__) . '/config/bootstrap.php';
+Configure::write('Foundation.actorContext', new ActorContext());
 Cache::setConfig('_cake_core_', ['className' => NullEngine::class]);
 ConnectionManager::setConfig('default', [
 	'className' => Connection::class,
