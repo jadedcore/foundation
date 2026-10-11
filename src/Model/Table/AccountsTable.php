@@ -18,9 +18,8 @@ class AccountsTable extends Table {
 		$this->setPrimaryKey('id');
 		$this->setDisplayField('email');
 		$this->setEntityClass(Account::class);
-		$this->getSchema()->setColumnType('id', 'foundation_ulid');
 		$this->addBehavior('Timestamp');
-		$this->addBehavior('Foundation.Ulid');
+		$this->addBehavior('Foundation.Ulid', ['fields' => ['id']]);
 		$this->hasMany('AccountTokens', [
 			'className' => 'Foundation.AccountTokens',
 			'foreignKey' => 'account_id',

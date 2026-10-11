@@ -20,6 +20,13 @@ class UlidBehavior extends Behavior {
 		if (!is_array($fields) || $fields === []) {
 			throw new InvalidArgumentException('UlidBehavior fields must be a non-empty array.');
 		}
+		foreach ($fields as $field) {
+			if (!is_string($field) || $field === '') {
+				throw new InvalidArgumentException('ULID field names must be non-empty strings.');
+			}
+		}
+
+		$this->applyUlidSchema(...array_values($fields));
 	}
 
 	/** Assign configured ULID fields before inserting a new entity. */
@@ -28,11 +35,18 @@ class UlidBehavior extends Behavior {
 			return;
 		}
 		foreach ($this->getConfig('fields') as $field) {
-			if (!is_string($field) || $field === '') {
-				throw new InvalidArgumentException('ULID field names must be non-empty strings.');
-			}
 			if ($entity->get($field) === null || $entity->get($field) === '') {
 				$entity->set($field, (string)new Ulid());
+			}
+		}
+	}
+
+	protected function applyUlidSchema(string ...$columns): void {
+		$schema = $this->table()->getSchema();
+
+		foreach ($columns as $column) {
+			if ($schema->hasColumn($column)) {
+				$schema->setColumnType($column, 'foundation_ulid');
 			}
 		}
 	}

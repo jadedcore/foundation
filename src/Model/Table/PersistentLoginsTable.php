@@ -14,10 +14,13 @@ class PersistentLoginsTable extends Table {
 		$this->setTable(Configure::read('Foundation.rememberMe.table', 'foundation_persistent_logins'));
 		$this->setPrimaryKey('id');
 		$this->setEntityClass(PersistentLogin::class);
-		$this->getSchema()->setColumnType('id', 'foundation_ulid');
-		$this->getSchema()->setColumnType('account_id', 'foundation_ulid');
 		$this->addBehavior('Timestamp', ['modified' => false]);
-		$this->addBehavior('Foundation.Ulid');
+		$this->addBehavior('Foundation.Ulid', [
+			'fields' => [
+				'id',
+				'account_id'
+			]
+		]);
 		$this->belongsTo('Accounts', ['className' => 'Foundation.Accounts', 'foreignKey' => 'account_id']);
 	}
 }
