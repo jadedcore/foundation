@@ -20,6 +20,7 @@ final class AuthenticationServiceFactory {
 			'finder' => 'forAuthentication',
 		];
 		$service = new AuthenticationService([
+			'identityClass' => Identity::class,
 			'unauthenticatedRedirect' => $loginUrl,
 			'queryParam' => Configure::read('Foundation.authentication.queryParam', 'redirect'),
 		]);
