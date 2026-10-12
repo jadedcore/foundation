@@ -12,6 +12,7 @@ use Foundation\Model\Table\AccountsTable;
 use Laminas\Diactoros\Response;
 use Laminas\Diactoros\ServerRequest;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Uid\Ulid;
 
 class AuthenticationServiceFactoryTest extends TestCase {
 	private AccountsTable $accounts;
@@ -65,6 +66,25 @@ class AuthenticationServiceFactoryTest extends TestCase {
 		$disabledResult = $disabledService->authenticate($disabledRequest);
 
 		$this->assertFalse($disabledResult->isValid());
+	}
+
+	public function testIdentityIdentifierForUlidAccountIsA26CharacterString(): void {
+		$request = $this->request('POST', '/foundation/login', [
+			'email' => $this->account->email,
+			'password' => 'a sufficiently long password',
+		]);
+		$service = (new AuthenticationServiceFactory())->create($request);
+		$result = $service->authenticate($request);
+		$identity = $service->getIdentity();
+
+		$this->assertTrue($result->isValid(), implode('; ', $result->getErrors()));
+		$resolvedAccount = $result->getData();
+		$this->assertInstanceOf(Account::class, $resolvedAccount);
+		$this->assertInstanceOf(Ulid::class, $resolvedAccount->id);
+		$this->assertNotNull($identity);
+		$this->assertIsString($identity->getIdentifier());
+		$this->assertSame(26, strlen($identity->getIdentifier()));
+		$this->assertSame((string)$this->account->id, $identity->getIdentifier());
 	}
 
 	/** @param array<string, string> $data */
